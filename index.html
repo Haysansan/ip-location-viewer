@@ -1,49 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Your IP & Location Info</title>
+  <title>Visitor Consent</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-    h1 {
-      color: #333;
-    }
-    .info {
-      background: #fff;
-      padding: 15px;
-      border-radius: 5px;
-      max-width: 400px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
+    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
+    .card { background: #fff; padding: 20px; max-width: 500px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    button { padding: 10px 20px; font-size: 16px; border: none; background: #2a8; color: #fff; border-radius: 5px; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>Your IP & Location Information</h1>
-  <div class="info">
-    <p><strong>IP Address:</strong> <span id="ip">Loading...</span></p>
-    <p><strong>City:</strong> <span id="city">Loading...</span></p>
-    <p><strong>Region:</strong> <span id="region">Loading...</span></p>
-    <p><strong>Country:</strong> <span id="country">Loading...</span></p>
-    <p><strong>ISP:</strong> <span id="org">Loading...</span></p>
+  <div class="card">
+    <h2>Consent Required</h2>
+    <p>This page will collect your IP address and approximate location (city, region, country, ISP) for research/project purposes.</p>
+    <button onclick="sendData()">I Consent</button>
+    <p id="status"></p>
   </div>
 
   <script>
-    fetch('https://ipinfo.io/json?token=YOUR_TOKEN') // Replace with your token or leave blank for limited use
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('ip').textContent = data.ip;
-        document.getElementById('city').textContent = data.city;
-        document.getElementById('region').textContent = data.region;
-        document.getElementById('country').textContent = data.country;
-        document.getElementById('org').textContent = data.org;
-      })
-      .catch(err => {
-        document.querySelector('.info').innerHTML = 'Failed to retrieve IP info.';
+    async function sendData() {
+      document.getElementById("status").textContent = "Collecting data...";
+      try {
+        const res = await fetch('https://ipinfo.io/json?token=46b6e8a0ca5426');
+        const data = await res.json();
+
+        const response = await fetch('https://script.google.com/macros/s/AKfycbxyY5Rq6dpufgBeffyfjE10WofM6OannzP4_5wWljgxQ4_VRjmXB_Xum2eDXtfy2xB9Kw/exec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ip: data.ip,
+            city: data.city,
+            region: data.region,
+            country: data.country,
+            org: data.org
+          })
+        });
+
+        if (response.ok) {
+          document.getElementById("status").textContent = "Thanks! Your data was submitted.";
+        } else {
+          document.getElementById("status").textContent = "Error submitting data.";
+        }
+      } catch (err) {
+        document.getElementById("status").textContent = "Failed to collect data.";
         console.error(err);
-      });
+      }
+    }
   </script>
 </body>
 </html>
